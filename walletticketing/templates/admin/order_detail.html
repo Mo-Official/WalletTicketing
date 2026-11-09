@@ -1,0 +1,55 @@
+{% extends "admin/base.html" %}
+{% from "macros.html" import status_badge, phase_badge with context %}
+{% block content %}
+<h1>Bestellung {{ order.number }} {{ status_badge(order) }}</h1>
+<div class="card">
+  <dl class="kv">
+    <dt>Kunde</dt><dd>{{ order.customer_name }} &lt;{{ order.customer_email }}&gt;</dd>
+    <dt>Erstellt</dt><dd>{{ order.created_at | local }}</dd>
+    <dt>Bezahlt</dt><dd>{{ order.paid_at | local or "–" }}</dd>
+    <dt>Zahlungsart</dt><dd>{{ order.payment_method }}</dd>
+    <dt>Referenz</dt><dd>{{ order.payment_reference or "–" }}</dd>
+    <dt>Landing Page</dt><dd>{{ order.landing_page.title if order.landing_page else "–" }}</dd>
+    <dt>Kundenlink</dt><dd><a href="/order/{{ order.public_token }}" target="_blank">Bestellseite öffnen ↗</a></dd>
+  </dl>
+</div>
+
+<table class="table">
+  <thead><tr><th>Produkt</th><th>Anzahl</th><th class="num">Einzelpreis</th><th class="num">Summe</th></tr></thead>
+  <tbody>
+  {% for item in order.items %}
+  <tr><td>{{ item.product.name }}{% if item.visit_date %} ({{ item.visit_date.strftime("%d.%m.%Y") }}){% endif %}</td>
+      <td>{{ item.quantity }}</td><td class="num">{{ item.unit_price_cents | money(order.currency) }}</td>
+      <td class="num">{{ item.line_total_cents | money(order.currency) }}</td></tr>
+  {% endfor %}
+  </tbody>
+  <tfoot><tr><th colspan="3">Gesamt</th><th class="num">{{ order.total_cents | money(order.currency) }}</th></tr></tfoot>
+</table>
+
+<div class="inline-actions">
+  {% if order.status.value in ("pending", "expired") %}
+  <form method="post" action="/admin/orders/{{ order.id }}/mark-paid">{{ csrf() }}<button class="btn btn-primary">Zahlungseingang bestätigen</button></form>
+  {% endif %}
+  {% if order.status.value in ("pending", "paid") %}
+  <form method="post" action="/admin/orders/{{ order.id }}/cancel" onsubmit="return confirm('Bestellung wirklich stornieren? Alle Tickets werden ungültig.')">
+    {{ csrf() }}
+    {% if order.status.value == "paid" %}<label class="check"><input type="checkbox" name="refunded"> Betrag erstattet</label>{% endif %}
+    <button class="btn btn-danger">Stornieren</button>
+  </form>
+  {% endif %}
+</div>
+
+{% if order.tickets %}
+<h2>Tickets</h2>
+<table class="table">
+  <thead><tr><th>Code</th><th>Produkt</th><th>Gültigkeit</th><th>Status</th><th>Einlässe</th></tr></thead>
+  <tbody>
+  {% for t in order.tickets %}
+  <tr><td><a href="/t/{{ t.access_token }}" target="_blank"><code>{{ t.code }}</code></a></td><td>{{ t.product.name }}</td>
+      <td>{{ t | window }}</td><td>{{ phase_badge(t) }}</td>
+      <td>{{ t.check_in_count }}{% if t.last_check_in %} <small class="muted">(zuletzt {{ t.last_check_in | local }})</small>{% endif %}</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+{% endblock %}

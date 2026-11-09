@@ -1,0 +1,25 @@
+{% extends "admin/base.html" %}
+{% block content %}
+<div class="page-head"><h1>Produkte</h1><a class="btn btn-primary" href="/admin/products/new">Neues Produkt</a></div>
+{% set vt = {"fixed": "Fester Zeitraum", "duration": "Zeitkarte", "day_of_choice": "Tag nach Wahl"} %}
+<table class="table">
+  <thead><tr><th>Name</th><th>Gültigkeit</th><th class="num">Preis</th><th class="num">Verkauft</th><th>Status</th></tr></thead>
+  <tbody>
+  {% for p in products %}
+    <tr>
+      <td><span class="swatch" style="background: {{ p.color }}"></span><a href="/admin/products/{{ p.id }}">{{ p.name }}</a><br><small class="muted">{{ p.slug }}</small></td>
+      <td>{{ vt[p.validity_type.value] }}
+        <br><small class="muted">
+        {% if p.validity_type.value == "duration" %}{{ p.validity_days }} Tag(e) ab Kauf
+        {% elif p.valid_from %}{{ p.valid_from | local }} – {{ p.valid_until | local }}{% endif %}
+        </small></td>
+      <td class="num">{{ p.price_cents | money(p.currency) }}</td>
+      <td class="num">{{ sold[p.id] }}{% if p.stock is not none %} / {{ p.stock }}{% endif %}</td>
+      <td>{% if p.active %}<span class="badge badge-paid">Aktiv</span>{% else %}<span class="badge">Inaktiv</span>{% endif %}</td>
+    </tr>
+  {% else %}
+    <tr><td colspan="5" class="muted">Noch keine Produkte</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

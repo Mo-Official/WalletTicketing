@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Tickets</h1>
+{% if pages %}
+<div class="grid">
+  {% for page in pages %}
+  <a class="card card-link" href="/l/{{ page.slug }}" style="--accent: {{ page.accent_color }}">
+    {% if page.hero_image_url %}<img class="card-img" src="{{ page.hero_image_url }}" alt="">{% endif %}
+    <h2>{{ page.title }}</h2>
+    {% if page.headline %}<p class="muted">{{ page.headline }}</p>{% endif %}
+  </a>
+  {% endfor %}
+</div>
+{% else %}
+<p class="muted">Aktuell sind keine Angebote verfügbar.</p>
+{% endif %}
+{% endblock %}

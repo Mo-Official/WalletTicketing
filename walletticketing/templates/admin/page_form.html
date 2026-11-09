@@ -1,0 +1,41 @@
+{% extends "admin/base.html" %}
+{% block content %}
+<h1>{{ "Landing Page bearbeiten" if page else "Neue Landing Page" }}</h1>
+{% if page and page.published %}<p><a href="/l/{{ page.slug }}" target="_blank">Seite ansehen ↗</a></p>{% endif %}
+{% for e in errors %}<div class="flash flash-error">{{ e }}</div>{% endfor %}
+<form method="post" class="card form">
+  {{ csrf() }}
+  <div class="form-grid">
+    <label>Titel <input name="title" value="{{ form.title }}" required></label>
+    <label>Slug (URL) <input name="slug" value="{{ form.slug }}" placeholder="automatisch aus Titel"></label>
+    <label>Hero-Bild-URL <input name="hero_image_url" value="{{ form.hero_image_url }}" placeholder="https://…"></label>
+    <label>Akzentfarbe <input name="accent_color" type="color" value="{{ form.accent_color }}"></label>
+  </div>
+  <label>Untertitel <input name="headline" value="{{ form.headline }}"></label>
+  <label>Text <small class="muted">(Leerzeile = neuer Absatz)</small><textarea name="body" rows="8">{{ form.body }}</textarea></label>
+
+  <fieldset>
+    <legend>Produkte auf dieser Seite</legend>
+    {% for p in all_products %}
+      <label class="check"><input type="checkbox" name="product_ids" value="{{ p.id }}" {% if p.id in form.product_ids %}checked{% endif %}>
+        {{ p.name }} <small class="muted">{{ p.price_cents | money(p.currency) }}{% if not p.active %} · inaktiv{% endif %}</small></label>
+    {% else %}
+      <p class="muted">Noch keine Produkte – <a href="/admin/products/new">jetzt anlegen</a>.</p>
+    {% endfor %}
+  </fieldset>
+
+  <fieldset>
+    <legend>Erlaubte Zahlungsarten <small class="muted">(keine Auswahl = alle verfügbaren)</small></legend>
+    {% for prov in all_providers %}
+      <label class="check"><input type="checkbox" name="payment_methods" value="{{ prov.code }}" {% if prov.code in form.payment_methods %}checked{% endif %}>
+        {{ prov.label }} {% if not prov.is_available() %}<small class="muted">(nicht konfiguriert)</small>{% endif %}</label>
+    {% endfor %}
+  </fieldset>
+
+  <label class="check"><input type="checkbox" name="published" {% if form.published in (true, "on") %}checked{% endif %}> Veröffentlicht</label>
+  <div class="inline-actions">
+    <button class="btn btn-primary" type="submit">Speichern</button>
+    <a class="btn" href="/admin/pages">Abbrechen</a>
+  </div>
+</form>
+{% endblock %}

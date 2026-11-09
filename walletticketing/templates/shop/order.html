@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% from "macros.html" import status_badge, phase_badge, wallet_buttons with context %}
+{% block title %}Bestellung {{ order.number }}{% endblock %}
+{% block content %}
+<h1>Bestellung {{ order.number }} {{ status_badge(order) }}</h1>
+<p class="muted">Bitte speichern Sie diesen Link – darüber erreichen Sie jederzeit Ihre Tickets.</p>
+
+<table class="table">
+  <thead><tr><th>Produkt</th><th>Anzahl</th><th class="num">Preis</th></tr></thead>
+  <tbody>
+  {% for item in order.items %}
+    <tr>
+      <td>{{ item.product.name }}{% if item.visit_date %} <span class="muted">({{ item.visit_date.strftime("%d.%m.%Y") }})</span>{% endif %}</td>
+      <td>{{ item.quantity }}</td>
+      <td class="num">{{ item.line_total_cents | money(order.currency) }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+  <tfoot><tr><th colspan="2">Gesamt</th><th class="num">{{ order.total_cents | money(order.currency) }}</th></tr></tfoot>
+</table>
+
+{% if instructions %}
+<div class="card">
+  <h2>Zahlungsinformationen</h2>
+  <p>Bitte überweisen Sie den Betrag auf folgendes Konto. Ihre Tickets werden nach Zahlungseingang hier freigeschaltet.</p>
+  <dl class="kv">
+    {% for k, v in instructions.items() if v %}<dt>{{ k }}</dt><dd>{{ v }}</dd>{% endfor %}
+  </dl>
+</div>
+{% elif order.status.value == "pending" %}
+<div class="card"><p>Ihre Zahlung wird bearbeitet. Bitte laden Sie diese Seite in Kürze neu.</p></div>
+{% endif %}
+
+{% if order.tickets %}
+<h2>Ihre Tickets</h2>
+<div class="tickets">
+  {% for ticket in order.tickets %}
+  <div class="ticket" style="--accent: {{ ticket.product.color }}">
+    <div class="ticket-head">
+      <strong>{{ ticket.product.name }}</strong>
+      {{ phase_badge(ticket) }}
+    </div>
+    <p>{{ ticket | window }}{% if ticket.product.venue %} · {{ ticket.product.venue }}{% endif %}</p>
+    <p class="code">{{ ticket.code }}</p>
+    <a class="btn" href="/t/{{ ticket.access_token }}">Ticket mit QR-Code öffnen</a>
+    {{ wallet_buttons(ticket) }}
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

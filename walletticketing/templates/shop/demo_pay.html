@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% from "macros.html" import csrf with context %}
+{% block content %}
+<div class="card narrow">
+  <h1>Testzahlung</h1>
+  <p class="muted">Dies ist ein simulierter Zahlungsanbieter für Entwicklung und Demos.</p>
+  <p>Bestellung <strong>{{ order.number }}</strong> über <strong>{{ order.total_cents | money(order.currency) }}</strong></p>
+  <form method="post" class="inline-actions">
+    {{ csrf() }}
+    <button class="btn btn-primary" name="action" value="pay">Zahlung bestätigen</button>
+    <button class="btn" name="action" value="cancel">Zahlung ablehnen</button>
+  </form>
+</div>
+{% endblock %}

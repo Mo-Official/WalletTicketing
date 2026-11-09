@@ -1,0 +1,13 @@
+{% extends "admin/base.html" %}
+{% block content %}
+<h1>Bestellungen</h1>
+<form class="filters" method="get">
+  <input name="q" value="{{ q }}" placeholder="Name, E-Mail oder Zahlungsreferenz">
+  <select name="status">
+    <option value="">Alle Status</option>
+    {% for s in statuses %}<option value="{{ s.value }}" {% if s.value == status %}selected{% endif %}>{{ s.value }}</option>{% endfor %}
+  </select>
+  <button class="btn">Filtern</button>
+</form>
+{% include "admin/_orders_table.html" with context %}
+{% endblock %}

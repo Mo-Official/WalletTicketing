@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% from "macros.html" import csrf with context %}
+{% block title %}{{ page.title }} – {{ settings.organization_name }}{% endblock %}
+{% block head %}<style>:root { --accent: {{ page.accent_color }}; }</style>{% endblock %}
+{% block content %}
+<section class="hero" {% if page.hero_image_url %}style="background-image: linear-gradient(rgba(0,0,0,.45), rgba(0,0,0,.45)), url('{{ page.hero_image_url }}')"{% endif %}>
+  <h1>{{ page.title }}</h1>
+  {% if page.headline %}<p class="lead">{{ page.headline }}</p>{% endif %}
+</section>
+
+{% if page.body %}<section class="prose">{{ page.body | paragraphs }}</section>{% endif %}
+
+{% if error %}<div class="flash flash-error">{{ error }}</div>{% endif %}
+
+{% if offers %}
+<form method="post" action="/l/{{ page.slug }}/checkout" class="checkout" id="checkout">
+  {{ csrf() }}
+  <h2>Tickets wählen</h2>
+  <div class="offers">
+    {% for o in offers %}
+    {% set p = o.product %}
+    <div class="offer" data-price="{{ p.price_cents }}">
+      <div class="offer-info">
+        <h3>{{ p.name }}</h3>
+        {% if p.description %}<p class="muted">{{ p.description }}</p>{% endif %}
+        <p class="validity">
+          {% if p.validity_type.value == "fixed" %}Gültig: {{ p.valid_from | local("%d.%m.%Y %H:%M") }} – {{ p.valid_until | local("%d.%m.%Y %H:%M") }}
+          {% elif p.validity_type.value == "duration" %}Gültig {{ p.validity_days }} Tag{{ "e" if p.validity_days != 1 }} ab Kauf
+          {% else %}Gültig am gewählten Besuchstag{% endif %}
+          {% if p.venue %} · {{ p.venue }}{% endif %}
+          {% if p.multi_entry %} · Mehrfacher Einlass{% endif %}
+        </p>
+        {% if o.remaining is not none and o.remaining < 20 %}<p class="stock">Nur noch {{ o.remaining }} verfügbar</p>{% endif %}
+      </div>
+      <div class="offer-buy">
+        <strong class="price">{{ p.price_cents | money(p.currency) }}</strong>
+        {% if o.max_qty > 0 %}
+          {% if o.needs_date %}
+          <label>Besuchstag
+            <input type="date" name="date_{{ p.id }}" min="{{ o.min_date }}" {% if o.max_date %}max="{{ o.max_date }}"{% endif %} value="{{ form.get('date_' ~ p.id, '') }}">
+          </label>
+          {% endif %}
+          <label>Anzahl
+            <select name="qty_{{ p.id }}" class="qty">
+              {% for n in range(0, o.max_qty + 1) %}
+              <option value="{{ n }}" {% if form.get('qty_' ~ p.id) == n|string %}selected{% endif %}>{{ n }}</option>
+              {% endfor %}
+            </select>
+          </label>
+        {% else %}
+          <span class="badge">Ausverkauft</span>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <h2>Ihre Daten</h2>
+  <div class="form-grid">
+    <label>Name <input name="name" required autocomplete="name" value="{{ form.get('name', '') }}"></label>
+    <label>E-Mail <input name="email" type="email" required autocomplete="email" value="{{ form.get('email', '') }}"></label>
+  </div>
+
+  <h2>Zahlungsart</h2>
+  {% if providers %}
+  <div class="payment-methods">
+    {% for prov in providers %}
+    <label class="payment-option">
+      <input type="radio" name="payment_method" value="{{ prov.code }}" required {% if form.get('payment_method') == prov.code or (not form.get('payment_method') and loop.first) %}checked{% endif %}>
+      <span><strong>{{ prov.label }}</strong>{% if prov.description %}<small class="muted">{{ prov.description }}</small>{% endif %}</span>
+    </label>
+    {% endfor %}
+  </div>
+  <div class="checkout-total">Gesamt: <strong id="total">0,00</strong></div>
+  <button class="btn btn-primary" type="submit">Kostenpflichtig bestellen</button>
+  {% else %}
+  <p class="flash flash-error">Derzeit ist keine Zahlungsart verfügbar.</p>
+  {% endif %}
+</form>
+<script>
+(function () {
+  const form = document.getElementById("checkout");
+  const total = document.getElementById("total");
+  const currency = {{ (offers[0].product.currency if offers else "EUR") | tojson }};
+  function update() {
+    let sum = 0;
+    form.querySelectorAll(".offer").forEach(function (el) {
+      const q = el.querySelector(".qty");
+      if (q) sum += parseInt(q.value || "0", 10) * parseInt(el.dataset.price, 10);
+    });
+    if (total) total.textContent = (sum / 100).toLocaleString("de-DE", { style: "currency", currency: currency });
+  }
+  form.addEventListener("change", update);
+  update();
+})();
+</script>
+{% else %}
+<p class="muted">Für diese Seite sind aktuell keine Tickets verfügbar.</p>
+{% endif %}
+{% endblock %}

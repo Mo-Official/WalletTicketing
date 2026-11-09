@@ -1,0 +1,12 @@
+{% extends "admin/base.html" %}
+{% block content %}
+<form method="post" action="/admin/login" class="card narrow">
+  {{ csrf() }}
+  <h1>Anmelden</h1>
+  {% if error %}<div class="flash flash-error">{{ error }}</div>{% endif %}
+  <input type="hidden" name="next" value="{{ next }}">
+  <label>Benutzername <input name="username" autocomplete="username" required></label>
+  <label>Passwort <input name="password" type="password" autocomplete="current-password" required></label>
+  <button class="btn btn-primary" type="submit">Anmelden</button>
+</form>
+{% endblock %}

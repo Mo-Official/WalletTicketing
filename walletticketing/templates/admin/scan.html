@@ -1,0 +1,19 @@
+{% extends "admin/base.html" %}
+{% block content %}
+<h1>Einlasskontrolle</h1>
+<form method="post" class="card narrow">
+  {{ csrf() }}
+  <label>Ticketcode (scannen oder eingeben)
+    <input name="code" autofocus autocomplete="off" placeholder="XXXX-XXXX-XXXX-XXXX" required></label>
+  <button class="btn btn-primary">Prüfen & entwerten</button>
+</form>
+{% if result %}
+<div class="scan-result {{ 'scan-ok' if result.ok else 'scan-fail' }}">
+  <strong>{{ "✔" if result.ok else "✘" }} {{ result.message }}</strong>
+  {% if result.ticket %}
+    <p>{{ result.ticket.code }} · {{ result.ticket.holder_name }} · {{ result.ticket | window }}</p>
+    <p>Einlässe: {{ result.ticket.check_in_count }}{% if result.ticket.product.multi_entry %} (Mehrfacheinlass){% endif %}</p>
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}
