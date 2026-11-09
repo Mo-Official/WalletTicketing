@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% from "macros.html" import csrf with context %}
+{% block body_class %}admin{% endblock %}
+{% block brand_href %}/admin{% endblock %}
+{% block brand %}{{ settings.app_name }} · Admin{% endblock %}
+{% block nav %}
+  {% if request.session.get("admin") %}
+  <a href="/admin">Dashboard</a>
+  <a href="/admin/products">Produkte</a>
+  <a href="/admin/pages">Landing Pages</a>
+  <a href="/admin/orders">Bestellungen</a>
+  <a href="/admin/scan">Einlass</a>
+  <a href="/" target="_blank">Shop ↗</a>
+  <form method="post" action="/admin/logout" class="nav-form">{{ csrf() }}<button class="linklike">Abmelden</button></form>
+  {% endif %}
+{% endblock %}

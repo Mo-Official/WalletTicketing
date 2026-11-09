@@ -1,0 +1,69 @@
+{% extends "admin/base.html" %}
+{% block content %}
+<h1>{{ "Produkt bearbeiten" if product else "Neues Produkt" }}</h1>
+{% for e in errors %}<div class="flash flash-error">{{ e }}</div>{% endfor %}
+<form method="post" class="card form">
+  {{ csrf() }}
+  <div class="form-grid">
+    <label>Name <input name="name" value="{{ form.name }}" required></label>
+    <label>Slug (URL) <input name="slug" value="{{ form.slug }}" placeholder="automatisch aus Name"></label>
+    <label>Preis <input name="price" value="{{ form.price }}" inputmode="decimal" required></label>
+    <label>Währung <input name="currency" value="{{ form.currency }}" maxlength="3"></label>
+    <label>Ort / Veranstaltungsort <input name="venue" value="{{ form.venue }}"></label>
+    <label>Wallet-Farbe <input name="color" type="color" value="{{ form.color }}"></label>
+  </div>
+  <label>Beschreibung <textarea name="description" rows="3">{{ form.description }}</textarea></label>
+
+  <fieldset>
+    <legend>Gültigkeitsraum</legend>
+    <label>Art
+      <select name="validity_type" id="validity_type">
+        <option value="fixed" {% if form.validity_type == "fixed" %}selected{% endif %}>Fester Zeitraum (Event, Festival, Saison)</option>
+        <option value="duration" {% if form.validity_type == "duration" %}selected{% endif %}>Zeitkarte: N Tage ab Kauf</option>
+        <option value="day_of_choice" {% if form.validity_type == "day_of_choice" %}selected{% endif %}>Tagesticket: Kunde wählt Besuchstag</option>
+      </select>
+    </label>
+    <div class="form-grid">
+      <label data-show="fixed day_of_choice">Beginn <small class="muted">(bei Tag nach Wahl: buchbar ab)</small>
+        <input name="valid_from" type="datetime-local" value="{{ form.valid_from }}"></label>
+      <label data-show="fixed day_of_choice">Ende <small class="muted">(bei Tag nach Wahl: buchbar bis)</small>
+        <input name="valid_until" type="datetime-local" value="{{ form.valid_until }}"></label>
+      <label data-show="duration">Gültigkeit in Tagen (inkl. Kauftag)
+        <input name="validity_days" type="number" min="1" value="{{ form.validity_days }}"></label>
+    </div>
+    <label>Wallet-Darstellung
+      <select name="wallet_style">
+        <option value="auto" {% if form.wallet_style == "auto" %}selected{% endif %}>Automatisch nach Gültigkeitsraum</option>
+        <option value="event" {% if form.wallet_style == "event" %}selected{% endif %}>Event-Ticket</option>
+        <option value="pass" {% if form.wallet_style == "pass" %}selected{% endif %}>Zeit-/Saisonkarte</option>
+      </select>
+    </label>
+    <label class="check"><input type="checkbox" name="multi_entry" {% if form.multi_entry in (true, "on") %}checked{% endif %}> Mehrfacher Einlass im Gültigkeitszeitraum</label>
+  </fieldset>
+
+  <fieldset>
+    <legend>Verkauf</legend>
+    <div class="form-grid">
+      <label>Kontingent <input name="stock" type="number" min="0" value="{{ form.stock }}" placeholder="unbegrenzt"></label>
+      <label>Max. pro Bestellung <input name="max_per_order" type="number" min="1" value="{{ form.max_per_order }}"></label>
+    </div>
+    <label class="check"><input type="checkbox" name="active" {% if form.active in (true, "on") %}checked{% endif %}> Aktiv (verkäuflich)</label>
+  </fieldset>
+  <div class="inline-actions">
+    <button class="btn btn-primary" type="submit">Speichern</button>
+    <a class="btn" href="/admin/products">Abbrechen</a>
+  </div>
+</form>
+<script>
+(function () {
+  const sel = document.getElementById("validity_type");
+  function toggle() {
+    document.querySelectorAll("[data-show]").forEach(function (el) {
+      el.hidden = el.dataset.show.split(" ").indexOf(sel.value) === -1;
+    });
+  }
+  sel.addEventListener("change", toggle);
+  toggle();
+})();
+</script>
+{% endblock %}

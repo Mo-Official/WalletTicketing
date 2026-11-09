@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% from "macros.html" import phase_badge, wallet_buttons with context %}
+{% block title %}Ticket {{ ticket.code }}{% endblock %}
+{% block content %}
+<div class="ticket ticket-large" style="--accent: {{ ticket.product.color }}">
+  <div class="ticket-head">
+    <h1>{{ ticket.product.name }}</h1>
+    {{ phase_badge(ticket) }}
+  </div>
+  <p class="validity">{{ ticket | window }}</p>
+  {% if ticket.product.venue %}<p>{{ ticket.product.venue }}</p>{% endif %}
+  <img class="qr" src="/t/{{ ticket.access_token }}/qr.svg" alt="QR-Code {{ ticket.code }}">
+  <p class="code">{{ ticket.code }}</p>
+  <p>Inhaber: {{ ticket.holder_name }} · Bestellung {{ ticket.order.number }}</p>
+  <p class="muted">{{ "Mehrfacher Einlass im Gültigkeitszeitraum" if ticket.product.multi_entry else "Einmaliger Einlass" }}</p>
+  {{ wallet_buttons(ticket, platform) }}
+</div>
+{% endblock %}

@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ settings.app_name }}{% endblock %}</title>
+  <link rel="stylesheet" href="/static/style.css">
+  {% block head %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <a class="brand" href="{% block brand_href %}/{% endblock %}">{% block brand %}{{ settings.organization_name }}{% endblock %}</a>
+      <nav>{% block nav %}{% endblock %}</nav>
+    </div>
+  </header>
+  <main class="wrap">
+    {% for category, message in pop_flashes(request) %}
+      <div class="flash flash-{{ category }}">{{ message }}</div>
+    {% endfor %}
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="wrap footer">© {{ now().year }} {{ settings.organization_name }}</footer>
+</body>
+</html>

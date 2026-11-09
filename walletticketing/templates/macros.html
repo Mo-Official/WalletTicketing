@@ -1,0 +1,22 @@
+{% macro csrf() %}<input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">{% endmacro %}
+
+{% macro status_badge(order) -%}
+  {% set labels = {"pending": "Offen", "paid": "Bezahlt", "cancelled": "Storniert", "expired": "Abgelaufen", "refunded": "Erstattet"} %}
+  <span class="badge badge-{{ order.status.value }}">{{ labels[order.status.value] }}</span>
+{%- endmacro %}
+
+{% macro phase_badge(ticket) -%}
+  {% set p = phase_of(ticket) %}
+  <span class="badge badge-phase-{{ p.value }}">{{ phase_labels[p] }}</span>
+{%- endmacro %}
+
+{% macro wallet_buttons(ticket, platform="") -%}
+  {% set apple %}{% if settings.apple_wallet_enabled %}<a class="wallet-btn wallet-apple" href="/t/{{ ticket.access_token }}/apple.pkpass">Zu Apple Wallet hinzufügen</a>{% endif %}{% endset %}
+  {% set google %}{% if settings.google_wallet_enabled %}<a class="wallet-btn wallet-google" href="/t/{{ ticket.access_token }}/google">Zu Google Wallet hinzufügen</a>{% endif %}{% endset %}
+  <div class="wallet-buttons">
+    {% if platform == "google" %}{{ google }}{{ apple }}{% else %}{{ apple }}{{ google }}{% endif %}
+    {% if not settings.apple_wallet_enabled and not settings.google_wallet_enabled %}
+      <span class="muted">Wallet-Integration ist nicht konfiguriert – nutzen Sie den QR-Code.</span>
+    {% endif %}
+  </div>
+{%- endmacro %}

@@ -1,0 +1,27 @@
+{% extends "admin/base.html" %}
+{% from "macros.html" import status_badge with context %}
+{% block content %}
+<h1>Dashboard</h1>
+<div class="stats">
+  <div class="stat"><span>Umsatz (30 Tage)</span><strong>{{ stats.revenue_30d | money }}</strong></div>
+  <div class="stat"><span>Bezahlte Bestellungen</span><strong>{{ stats.orders_paid }}</strong></div>
+  <div class="stat"><span>Offene Bestellungen</span><strong>{{ stats.orders_pending }}</strong></div>
+  <div class="stat"><span>Tickets</span><strong>{{ stats.tickets }}</strong></div>
+  <div class="stat"><span>Produkte</span><strong>{{ stats.products }}</strong></div>
+  <div class="stat"><span>Landing Pages</span><strong>{{ stats.pages }}</strong></div>
+</div>
+
+<div class="card">
+  <h2>Integrationen</h2>
+  <ul class="checklist">
+    {% for p in providers %}<li class="ok">Zahlungsart: {{ p.label }} ({{ p.code }})</li>{% endfor %}
+    <li class="{{ 'ok' if settings.apple_wallet_enabled else 'off' }}">Apple Wallet {{ "aktiv" if settings.apple_wallet_enabled else "nicht konfiguriert" }}</li>
+    <li class="{{ 'ok' if settings.google_wallet_enabled else 'off' }}">Google Wallet {{ "aktiv" if settings.google_wallet_enabled else "nicht konfiguriert" }}</li>
+    {% if settings.demo_payments %}<li class="warn">Testzahlungen sind aktiviert – in Produktion DEMO_PAYMENTS=false setzen!</li>{% endif %}
+    {% if settings.admin_password == "admin" %}<li class="warn">Standard-Admin-Passwort aktiv – bitte ADMIN_PASSWORD setzen!</li>{% endif %}
+  </ul>
+</div>
+
+<h2>Letzte Bestellungen</h2>
+{% include "admin/_orders_table.html" with context %}
+{% endblock %}

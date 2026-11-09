@@ -1,0 +1,20 @@
+{% extends "admin/base.html" %}
+{% block content %}
+<div class="page-head"><h1>Landing Pages</h1><a class="btn btn-primary" href="/admin/pages/new">Neue Landing Page</a></div>
+<table class="table">
+  <thead><tr><th>Titel</th><th>URL</th><th>Produkte</th><th>Zahlungsarten</th><th>Status</th></tr></thead>
+  <tbody>
+  {% for p in pages %}
+    <tr>
+      <td><a href="/admin/pages/{{ p.id }}">{{ p.title }}</a></td>
+      <td>{% if p.published %}<a href="/l/{{ p.slug }}" target="_blank">/l/{{ p.slug }}</a>{% else %}<span class="muted">/l/{{ p.slug }}</span>{% endif %}</td>
+      <td>{{ p.products | length }}</td>
+      <td>{{ p.payment_methods or "alle" }}</td>
+      <td>{% if p.published %}<span class="badge badge-paid">Veröffentlicht</span>{% else %}<span class="badge">Entwurf</span>{% endif %}</td>
+    </tr>
+  {% else %}
+    <tr><td colspan="5" class="muted">Noch keine Landing Pages</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

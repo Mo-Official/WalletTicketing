@@ -1,0 +1,19 @@
+{% from "macros.html" import status_badge with context %}
+{% set rows = recent if recent is defined else orders %}
+<table class="table">
+  <thead><tr><th>Nr.</th><th>Datum</th><th>Kunde</th><th>Zahlungsart</th><th>Status</th><th class="num">Betrag</th></tr></thead>
+  <tbody>
+  {% for o in rows %}
+    <tr>
+      <td><a href="/admin/orders/{{ o.id }}">{{ o.number }}</a></td>
+      <td>{{ o.created_at | local }}</td>
+      <td>{{ o.customer_name }}<br><small class="muted">{{ o.customer_email }}</small></td>
+      <td>{{ o.payment_method }}</td>
+      <td>{{ status_badge(o) }}</td>
+      <td class="num">{{ o.total_cents | money(o.currency) }}</td>
+    </tr>
+  {% else %}
+    <tr><td colspan="6" class="muted">Keine Bestellungen</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
